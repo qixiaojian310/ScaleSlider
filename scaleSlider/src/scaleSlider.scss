@@ -1,0 +1,59 @@
+@use 'sass:math';
+$sliderHeight: 30px;
+$controlHeight: math.div($sliderHeight, 3);
+
+.slider{
+	--slider-height: #{$sliderHeight};
+	--control-height: #{$controlHeight};
+	position: relative;
+	width: 400px;
+	height: var(--slider-height);
+	.track{
+		z-index: 0;
+		top: 50%;
+		left: 0;
+		position: absolute;
+		width: 100%;
+		height: var(--control-height);
+		background: #b4b4b4;
+		transform: translateY(-50%);
+	}
+	.rail{
+		z-index: 1;
+		top: 50%;
+		left: 0;
+		position: absolute;
+		width: 40%;
+		height: var(--control-height);
+		background: #0b6201;
+		transform: translateY(-50%);
+	}
+	.handle{
+		position: absolute;
+		z-index: 3;
+		left: 40%;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 3;
+		height: calc(2 * var(--control-height));
+		width: calc(2 * var(--control-height));
+		background: #ffffff;
+		border: 1px solid #111111;
+		border-radius: 50%;
+	}
+	&:hover {
+		cursor: grab ;
+	}
+	&:active{
+		cursor: grabbing;
+	}
+	.scale{
+		top: 50%;
+		transform: translateY(-50%);
+		height: var(--control-height);
+		width: 2px;
+		position: absolute;
+		background: #ffffff;
+		z-index: 2;
+	}
+}
