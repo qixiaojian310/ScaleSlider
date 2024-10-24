@@ -1,5 +1,11 @@
 # Scale Slide
 
+目录
+
+1. scaleSlider： 前端
+2. scaleSliderBacked： 后端
+3. scaleSliderPyDeploy: 使用uvicorn部署前端的build文件
+
 ## 部署
 
 ### 简单版
