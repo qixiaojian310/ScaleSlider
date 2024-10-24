@@ -1,4 +1,4 @@
-# Scale Slide
+# Scale Slider
 
 目录
 
