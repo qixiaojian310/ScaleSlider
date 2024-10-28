@@ -7,12 +7,14 @@ function ScaleSlider({
   scale,
   max,
   min,
+  label,
   getRes,
 }: {
   sliderKey: string;
   scale?: Scale[];
   max: Scale;
   min: Scale;
+  label: string;
   getRes: (s: Scale, sliderKey: string) => void;
 }) {
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -22,6 +24,7 @@ function ScaleSlider({
   const [mouseDown, setMouseDown] = useState(false);
   const [sliderWidth, setSliderWidth] = useState(0);
   const prevMaxSelect = useRef<Scale | null>(null);
+  const [maxSelect, setMaxSelect] = useState<Scale>();
 
   const throttle = <T extends (...args: any[]) => void>(
     func: T,
@@ -98,40 +101,45 @@ function ScaleSlider({
     if (maxSelect && maxSelect.key !== prevMaxSelect.current?.key) {
       prevMaxSelect.current = maxSelect;
       getRes(maxSelect, sliderKey);
+      setMaxSelect(maxSelect);
     }
   }, [max, scale, percentage]);
 
   return (
-    <>
-      <div className="slider" ref={sliderRef}>
-        <div
-          className="rail"
-          ref={railRef}
-          style={{ width: `${percentage}%` }}
-        />
-        <div
-          className="handle"
-          ref={handleRef}
-          onMouseDown={() => {
-            setSliderWidth(
-              sliderRef.current?.getBoundingClientRect().width ?? 0,
+    <div className="slider-box">
+      <p>{label}</p>
+      <div>
+        <div className="slider" ref={sliderRef}>
+          <div
+            className="rail"
+            ref={railRef}
+            style={{ width: `${percentage}%` }}
+          />
+          <div
+            className="handle"
+            ref={handleRef}
+            onMouseDown={() => {
+              setSliderWidth(
+                sliderRef.current?.getBoundingClientRect().width ?? 0,
+              );
+              setMouseDown(true);
+            }}
+            style={{ left: `${percentage}%` }}
+          />
+          <div className="track" />
+          {scale?.map((item) => {
+            return (
+              <div
+                className="scale"
+                key={item.key}
+                style={{ left: `${(item.value * 100) / max.value}%` }}
+              ></div>
             );
-            setMouseDown(true);
-          }}
-          style={{ left: `${percentage}%` }}
-        />
-        <div className="track" />
-        {scale?.map((item) => {
-          return (
-            <div
-              className="scale"
-              key={item.key}
-              style={{ left: `${(item.value * 100) / max.value}%` }}
-            ></div>
-          );
-        })}
+          })}
+        </div>
       </div>
-    </>
+      <p>{maxSelect?.value}</p>
+    </div>
   );
 }
 

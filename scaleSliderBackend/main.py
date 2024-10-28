@@ -110,9 +110,6 @@ async def calculate_sum(scales: List[Scale]):
     # 计算value的总和
     # 计算返回的策略
     level_distribution_new = np.array(level_distribution) / np.sum(level_distribution)
-    print(level_distribution)
-    print("===")
-    print(scales)
     ##xiaojian: 把这里改一下
     total_flow = level_distribution_new[0] * find_value_by_key(
         scales, "level1"

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import ScaleSlider from './ScaleSlider';
 import { Scale, ScaleSliderController } from './types';
+import './App.scss';
 
 function App() {
   const [scaleSliders, setScaleSliders] = useState<ScaleSliderController[]>([]);
@@ -50,12 +51,13 @@ function App() {
 
   return (
     <div className="slides">
-      <div>{allRes}</div>
+      <div className="result">{allRes}</div>
       {scaleSliders.map((item, index) => {
         return (
           <ScaleSlider
             key={item.key}
             sliderKey={item.key}
+            label={item.label}
             scale={item.scales}
             max={item.max}
             min={item.min}
