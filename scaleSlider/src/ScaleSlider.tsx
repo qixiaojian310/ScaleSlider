@@ -3,15 +3,17 @@ import './scaleSlider.scss';
 import { Scale } from './types';
 
 function ScaleSlider({
+  sliderKey,
   scale,
   max,
   min,
   getRes,
 }: {
+  sliderKey: string;
   scale?: Scale[];
   max: Scale;
   min: Scale;
-  getRes: (s: Scale) => void;
+  getRes: (s: Scale, sliderKey: string) => void;
 }) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
@@ -95,7 +97,7 @@ function ScaleSlider({
     // 只有在 maxSelect 发生变化时才调用 getRes
     if (maxSelect && maxSelect.key !== prevMaxSelect.current?.key) {
       prevMaxSelect.current = maxSelect;
-      getRes(maxSelect);
+      getRes(maxSelect, sliderKey);
     }
   }, [max, scale, percentage]);
 

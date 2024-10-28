@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+import numpy as np
 
 # 创建FastAPI实例
 app = FastAPI()
@@ -24,6 +25,7 @@ class Scale(BaseModel):
     label: str
     value: float
     key: str
+    sliderKey: Optional[str]
 
 
 class ScaleSliderController(BaseModel):
@@ -31,36 +33,74 @@ class ScaleSliderController(BaseModel):
     min: Scale
     max: Scale
     key: str
+    label: str
 
 
 # 创建一个包含 scaleSliders 数据的变量
 # TODO 需要新的数据和刻度
-scale_sliders = [
+scale_sliders: List[ScaleSliderController] = [
     {
         "scales": [
-            {"value": 10, "label": "One", "key": "1"},
-            {"value": 20, "label": "Two", "key": "2"},
-            {"value": 30, "label": "Three", "key": "3"},
+            {"value": 1000, "label": "Low", "key": "1"},
+            {"value": 2000, "label": "Mid", "key": "2"},
+            {"value": 3000, "label": "High", "key": "3"},
         ],
-        "min": {"value": 0, "label": "Zero", "key": "min"},
-        "max": {"value": 150, "label": "Max", "key": "max"},
-        "key": "slide1",
+        "min": {"value": 1000, "label": "Zero", "key": "min"},
+        "max": {"value": 3000, "label": "Max", "key": "max"},
+        ###第一阶流水
+        "label": "Total Flow Level 1",
+        "key": "level1",
     },
     {
         "scales": [
-            {"value": 10, "label": "Low", "key": "1"},
-            {"value": 70, "label": "Mid", "key": "2"},
-            {"value": 90, "label": "High", "key": "3"},
+            {"value": 0.1, "label": "Low", "key": "1"},
+            {"value": 0.3, "label": "Mid", "key": "2"},
+            {"value": 0.5, "label": "High", "key": "3"},
         ],
-        "min": {"value": 0, "label": "Min", "key": "min"},
-        "max": {"value": 120, "label": "Max", "key": "max"},
-        "key": "slide2",
+        "min": {"value": 0.1, "label": "Zero", "key": "min"},
+        "max": {"value": 0.5, "label": "Max", "key": "max"},
+        ###第一阶返回比例
+        "label": "Cash Return Level 1",
+        "key": "ratio1",
+    },
+    {
+        "scales": [
+            {"value": 10000, "label": "Low", "key": "1"},
+            {"value": 20000, "label": "Mid", "key": "2"},
+            {"value": 30000, "label": "High", "key": "3"},
+        ],
+        "min": {"value": 10000, "label": "Min", "key": "min"},
+        "max": {"value": 30000, "label": "Max", "key": "max"},
+        ###第二阶流水
+        "label": "Total Flow Level 2",
+        "key": "level2",
+    },
+    {
+        "scales": [
+            {"value": 0.1, "label": "Low", "key": "1"},
+            {"value": 0.3, "label": "Mid", "key": "2"},
+            {"value": 0.5, "label": "High", "key": "3"},
+        ],
+        "min": {"value": 0.1, "label": "Zero", "key": "min"},
+        "max": {"value": 0.5, "label": "Max", "key": "max"},
+        ###第一阶返回比例
+        "label": "Cash Return Level 2",
+        "key": "ratio2",
     },
 ]
 
+##level distribution是level 1 和level 2的预计用户量
+level_distribution = [150, 50]
+
+
+# 查找 key 为 "level1" 的对象并返回其 value
+def find_value_by_key(scales: List[Scale], target_key: str) -> Optional[float]:
+    scale = next((s for s in scales if s.sliderKey == target_key), None)
+    return scale.value if scale else None
+
 
 # 创建一个新的 GET 路由来返回 scaleSliders 数据
-@app.get("/slide/data", response_model=List[ScaleSliderController])
+@app.get("/slide/data")
 async def get_scale_sliders():
     return scale_sliders
 
@@ -68,7 +108,20 @@ async def get_scale_sliders():
 @app.post("/slide/res")
 async def calculate_sum(scales: List[Scale]):
     # 计算value的总和
-    # TODO 需要新的求和逻辑
-    concatenated_labels = "".join(scale.label for scale in scales)
+    # 计算返回的策略
+    level_distribution_new = np.array(level_distribution) / np.sum(level_distribution)
+    print(level_distribution)
+    print("===")
+    print(scales)
+    ##xiaojian: 把这里改一下
+    total_flow = level_distribution_new[0] * find_value_by_key(
+        scales, "level1"
+    ) + level_distribution_new[1] * find_value_by_key(scales, "level2")
+    total_rtp_cost = (
+        find_value_by_key(scales, "level1") * find_value_by_key(scales, "ratio1")
+        + (find_value_by_key(scales, "level2") - find_value_by_key(scales, "level2"))
+        * find_value_by_key(scales, "ratio2")
+    ) / total_flow
+
     # 返回结果
-    return {"result": str(concatenated_labels)}
+    return {"result": str(total_rtp_cost)}

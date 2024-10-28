@@ -19,18 +19,27 @@ function App() {
     setScaleSlideRes(data.map((item) => item.min));
   }, []);
   const reqResFunction = useCallback(async () => {
-    const res = await fetch(
-      `http://${import.meta.env.VITE_FASTAPI_ADDR}:${import.meta.env.VITE_FASTAPI_PORT}/slide/res`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    if (
+      scaleSliderRes &&
+      Array.isArray(scaleSliderRes) &&
+      scaleSliderRes.length &&
+      scaleSliderRes.every(
+        (value) => value?.sliderKey && value.value && value.label,
+      )
+    ) {
+      const res = await fetch(
+        `http://${import.meta.env.VITE_FASTAPI_ADDR}:${import.meta.env.VITE_FASTAPI_PORT}/slide/res`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(scaleSliderRes),
         },
-        body: JSON.stringify(scaleSliderRes),
-      },
-    );
-    const data = await res.json();
-    setAllRes(data.result);
+      );
+      const data = await res.json();
+      setAllRes(data.result);
+    }
   }, [scaleSliderRes]);
   useEffect(() => {
     reqResFunction();
@@ -46,12 +55,19 @@ function App() {
         return (
           <ScaleSlider
             key={item.key}
+            sliderKey={item.key}
             scale={item.scales}
             max={item.max}
             min={item.min}
-            getRes={(newScale) => {
+            getRes={(newScale, sliderkey) => {
               setScaleSlideRes((prev) =>
-                prev.map((s, i) => (i === index ? newScale : s)),
+                prev.map((s, i) =>
+                  i === index
+                    ? Object.assign(newScale, {
+                        sliderKey: sliderkey,
+                      })
+                    : s,
+                ),
               );
             }}
           />
